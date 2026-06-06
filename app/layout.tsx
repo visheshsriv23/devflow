@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
-import Navbar from "@/components/navigation/navbar";
+import { Toaster } from "sonner";
+import { SessionProvider } from "next-auth/react";
+import { auth } from "@/auth";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -17,34 +19,39 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "CodeCircle",
   description:
-    "Ask questions, share technical knowledge, and grow your programming skills with CodeCircle—the interactive, code-first Q&A platform built by developers, for developers.",
+    "Ask questions, share technical knowledge, and grow your programming skills with CodeCircle—the interactive, code-focused community.",
   icons: {
     icon: "/images/site-logo.svg",
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
+  const session = await auth();
   return (
     <html
       lang="en"
       suppressHydrationWarning
       className={`${inter.className} ${spaceGrotesk.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Navbar />
-          {children}
-        </ThemeProvider>
-      </body>
+      <SessionProvider session={session}>
+        <body className="min-h-full flex flex-col">
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+
+            {/* Moving Toaster inside the ThemeProvider and body tag fixes the errors */}
+            <Toaster richColors />
+          </ThemeProvider>
+        </body>
+      </SessionProvider>
     </html>
   );
 }
